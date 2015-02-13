@@ -1,15 +1,60 @@
-language: racket
+language: c
 
 notifications:
   irc: "chat.freenode.net#Heather"
   email: false
 
+# Optional: To use Travis CI's newer container infrastucture,
+# un-comment the following line. (Also be sure RACKET_DIR is set to
+# somewhere like ~/racket that doesn't require sudo.)
+#
+# sudo: false
+
 env:
- - RACKET_VERSION=5.3.5
+  global:
+    # Supply a global RACKET_DIR environment variable. This is where
+    # Racket will be installed. A good idea is to use ~/racket because
+    # that doesn't require sudo to install and is therefore compatible
+    # with Travis CI's newer container infrastructure.
+    - RACKET_DIR=~/racket
+  matrix:
+    # Supply at least one RACKET_VERSION environment variable. This is
+    # used by the install-racket.sh script (run at before_install,
+    # below) to select the version of Racket to download and install.
+    #
+    # Supply more than one RACKET_VERSION (as in the example below) to
+    # create a Travis-CI build matrix to test against multiple Racket
+    # versions.
+    - RACKET_VERSION=5.3.4
+    - RACKET_VERSION=5.3.5
+    - RACKET_VERSION=6.0
+    - RACKET_VERSION=6.1
+    - RACKET_VERSION=6.1.1
+    - RACKET_VERSION=HEAD
 
 before_install:
- - curl -L https://github.com/greghendershott/travis-racket/releases/download/v0.6/install-racket.sh | sh
- - sudo apt-get update
+  - git clone https://github.com/greghendershott/travis-racket.git
+  - cat travis-racket/install-racket.sh | bash # pipe to bash not sh!
+  - export PATH="${RACKET_DIR}/bin:${PATH}" #install-racket.sh can't set for us
+  - sudo apt-get update # Is this actually needed??
 
+install:
+
+before_script:
+
+# Here supply steps such as raco make, raco test, etc.
+#
+# Tip: Use `raco pkg install --deps search-auto <pkg>` to install any
+# required packages without getting stuck on a confirmation prompt.
 script:
- - /usr/racket/bin/raco make -v finder.rkt
+  - raco make -v finder.rkt
+
+# NOTE: If your repo is a Racket package with an info.rkt that
+# includes some `deps`, the following is more elegant:
+#
+# script:
+# - cd ..   # Travis did a cd into the dir. Back up, for the next:
+# - raco pkg install --deps search-auto --link <pkg>
+# - raco test -x -p <pkg>
+
+after_script:
