@@ -1,0 +1,15 @@
+language: racket
+
+notifications:
+  irc: "chat.freenode.net#Heather"
+  email: false
+
+env:
+ - RACKET_VERSION=5.3.5
+
+before_install:
+ - curl -L https://github.com/greghendershott/travis-racket/releases/v0.1/1886/install-racket.sh | sh
+ - sudo apt-get update
+
+script:
+ - /usr/racket/bin/raco make -v finder.rkt
