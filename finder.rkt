@@ -51,26 +51,44 @@
        
        [cycle 0]
        [trytime 0]
+       
+       ;Add character method (last cycle)
+       [addMethod
+        (λ (username tch)
+          (format "~a~a" username tch)
+          )]
+       
+       ;Replace character method (cycle 0)
+       [replaceDepth 1]
+       [replaceMethod
+        (λ (username tch)
+          (when (= trytime 26)
+            (set! replaceDepth 2))
+          (let* ([username- (string-drop-right username replaceDepth)])
+            (format "~a~a" username- tch))
+          )]
+       
+       ;Main processor
        [smart-twitter-search
         (λ (username)
           (define timer-counter 0)
           (unless (twitter-search username)
             (letrec ((recursive-twitter-search
-                      (λ (username tch)
+                      (λ (username tch cycle)
                         ;Logics:
                         (let* (;[strlen (string-length username)]
-                               [test (match cycle
-                                       [0 (let* ([username- (string-drop-right username 1)])
-                                            (format "~a~a" username- tch)
-                                           )]
-                                       [_ (format "~a~a" username tch)]
-                                       )]
+                               [test ((match cycle
+                                       [0 replaceMethod]
+                                       [_ addMethod]
+                                       ) username tch)]
                                [tchx (integer->char (+ 1 (char->integer tch)))])
                           (set! trytime (+ 1 trytime))
-                          (cond
-                            [(= trytime 5) (set! cycle 1)]
-                            [(= trytime 10) (set! cycle 2)])
-                          (unless (or (twitter-search test) (> trytime 10))
+                          (unless (or (twitter-search test)                           
+                                      (cond
+                                        [(= trytime 5) (recursive-twitter-search username #\a 1) #t]
+                                        [(= trytime 10) (recursive-twitter-search username #\a 2) #t]
+                                        [(= trytime 11) (set! cycle 2) #t] ; End
+                                        [else #f]))
                             (define timer
                               (new timer%
                                    (notify-callback
@@ -80,10 +98,10 @@
                                             [else
                                              (send timer stop)
                                              (set! timer-counter 0)
-                                             (recursive-twitter-search username tchx)
+                                             (recursive-twitter-search username tchx cycle)
                                              ])))))
                             (send timer start 100))))))
-              (recursive-twitter-search username #\a))))]
+              (recursive-twitter-search username #\a 0))))]
        
        [p (new horizontal-panel%
                [parent main]
