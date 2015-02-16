@@ -1,6 +1,6 @@
 #lang racket/gui
 
-(require net/url
+(require net/url srfi/13
          net/http-client
          json)
 
@@ -49,6 +49,7 @@
                     'normal)))
             (send t insert msg) available))]
        
+       [cycle 0]
        [trytime 0]
        [smart-twitter-search
         (λ (username)
@@ -57,12 +58,18 @@
             (letrec ((recursive-twitter-search
                       (λ (username tch)
                         ;Logics:
-                        ; - Add characters
-                        ; - Replace characters
-                        ; - ...
-                        (let* ([test (format "~a~a" username tch)]
+                        (let* (;[strlen (string-length username)]
+                               [test (match cycle
+                                       [0 (let* ([username- (string-drop-right username 1)])
+                                            (format "~a~a" username- tch)
+                                           )]
+                                       [_ (format "~a~a" username tch)]
+                                       )]
                                [tchx (integer->char (+ 1 (char->integer tch)))])
                           (set! trytime (+ 1 trytime))
+                          (cond
+                            [(= trytime 5) (set! cycle 1)]
+                            [(= trytime 10) (set! cycle 2)])
                           (unless (or (twitter-search test) (> trytime 10))
                             (define timer
                               (new timer%
