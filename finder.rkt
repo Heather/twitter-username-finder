@@ -24,7 +24,7 @@
                   [label ip] [min-width 300]))
 
 (define c (new editor-canvas% [parent main]
-        [min-width 100] [min-height 300]))
+               [min-width 100] [min-height 300]))
 (define t (new append-only-text%))
 (send c set-editor t)
 
@@ -33,7 +33,7 @@
                      [label "Want"]
                      [parent main]
                      [init-value ""])]
-
+       
        [twitter-search
         (λ (username)
           (let* ([url (string-append twitterCheck username)]
@@ -43,10 +43,10 @@
                  [available (string=? strReason "available")]
                  [msg (format "~a -> ~a\n" username strReason)])
             (send t change-style 
-              (make-object style-delta% 'change-weight
-                (if available
-                    'bold
-                    'normal)))
+                  (make-object style-delta% 'change-weight
+                    (if available
+                        'bold
+                        'normal)))
             (send t insert msg) available))]
        
        [cycle 0]
@@ -73,34 +73,35 @@
         (λ (username)
           (define timer-counter 0)
           (unless (twitter-search username)
-            (letrec ((recursive-twitter-search
-                      (λ (username tch cycle)
-                        ;Logics:
-                        (let* (;[strlen (string-length username)]
-                               [test ((match cycle
-                                       [0 replaceMethod]
-                                       [_ addMethod]
-                                       ) username tch)]
-                               [tchx (integer->char (+ 1 (char->integer tch)))])
-                          (set! trytime (+ 1 trytime))
-                          (unless (or (twitter-search test)                           
-                                      (cond
-                                        [(= trytime 5) (recursive-twitter-search username #\a 1) #t]
-                                        [(= trytime 10) (recursive-twitter-search username #\a 2) #t]
-                                        [(= trytime 11) (set! cycle 2) #t] ; End
-                                        [else #f]))
-                            (define timer
-                              (new timer%
-                                   (notify-callback
-                                    (lambda ()
-                                      (cond [(< timer-counter 5)
-                                             (set! timer-counter (add1 timer-counter))]
-                                            [else
-                                             (send timer stop)
-                                             (set! timer-counter 0)
-                                             (recursive-twitter-search username tchx cycle)
-                                             ])))))
-                            (send timer start 100))))))
+            (letrec 
+                ((recursive-twitter-search
+                  (λ (username tch cycle)
+                    ;Logics:
+                    (let* (;[strlen (string-length username)]
+                           [test ((match cycle
+                                    [0 replaceMethod]
+                                    [_ addMethod]
+                                    ) username tch)]
+                           [tchx (integer->char (+ 1 (char->integer tch)))])
+                      (set! trytime (+ 1 trytime))
+                      (unless (or (twitter-search test)                           
+                                  (cond
+                                    [(= trytime 5) (recursive-twitter-search username #\a 1) #t]
+                                    [(= trytime 10) (recursive-twitter-search username #\a 2) #t]
+                                    [(= trytime 11) (set! cycle 2) #t] ; End
+                                    [else #f]))
+                        (define timer
+                          (new timer%
+                               (notify-callback
+                                (lambda ()
+                                  (cond [(< timer-counter 5)
+                                         (set! timer-counter (add1 timer-counter))]
+                                        [else
+                                         (send timer stop)
+                                         (set! timer-counter 0)
+                                         (recursive-twitter-search username tchx cycle)
+                                         ])))))
+                        (send timer start 100))))))
               (recursive-twitter-search username #\a 0))))]
        
        [p (new horizontal-panel%
@@ -108,9 +109,9 @@
                [alignment '(right top)])]
        
        [twitter (new button%
-                    [parent p]
-                    [label "Analyse"]
-                    [callback (λ (btn evt)
-           (smart-twitter-search (send editBox get-value)))])])
-
-(send main show #t))
+                     [parent p]
+                     [label "Analyse"]
+                     [callback (λ (btn evt)
+                                 (smart-twitter-search (send editBox get-value)))])])
+  
+  (send main show #t))
