@@ -3,8 +3,6 @@ Work in progress
 
 [![Build Status](https://travis-ci.org/Heather/twitter-username-finder.png?branch=master)](https://travis-ci.org/Heather/twitter-username-finder)
 
-<img src="http://i.imgur.com/bPwnkD9.jpg">
-
 ``` racket
 (λ (username)
   (let* ([url (string-append twitterCheck username)]
