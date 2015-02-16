@@ -11,35 +11,43 @@
          (response (port->string input)))
     (close-input-port input)
     response))
+(define append-only-text%
+  (class text%
+    (inherit last-position)
+    (define/augment (can-insert? s l) (= s (last-position)))
+    (define/augment (can-delete? s l) #f)
+    (super-new)))
+
+(define main (new (class frame% (super-new)
+                    (define/augment (on-close)
+                      (displayln "Bye")))
+                  [label ip] [min-width 300]))
+
+(define c (new editor-canvas% [parent main]
+        [min-width 100] [min-height 300]))
+(define t (new append-only-text%))
+(send c set-editor t)
 
 (let* ([twitterCheck "https://twitter.com/users/username_available?username="]
-       [main (new (class frame% (super-new)
-                 (define/augment (on-close)
-                   (displayln "Bye")))
-               [label ip] [min-width 300])]
-       
        [editBox (new text-field%
                      [label "Want"]
                      [parent main]
                      [init-value ""])]
-       
-       [group-box-panel (new group-box-panel%
-                             [parent main] [label "Log:"]
-                             [min-width 100] [min-height 300])]
-       
+
        [twitter-search
         (λ (username)
           (let* ([url (string-append twitterCheck username)]
                  [resp (urlopen url)]
                  [fromJson (string->jsexpr resp)]
                  [strReason (hash-ref fromJson 'reason)]
-                 [msg (format "~a -> ~a" username strReason)]
-                 [zp (new horizontal-panel%
-                          [parent group-box-panel]
-                          [alignment '(left top)]
-                          )])
-            (make-object message% msg zp)
-            (string=? strReason "available")))]
+                 [available (string=? strReason "available")]
+                 [msg (format "~a -> ~a\n" username strReason)])
+            (send t change-style 
+              (make-object style-delta% 'change-weight
+                (if available
+                    'bold
+                    'normal)))
+            (send t insert msg) available))]
        
        [trytime 0]
        [smart-twitter-search
@@ -70,7 +78,6 @@
                             (send timer start 100))))))
               (recursive-twitter-search username #\a))))]
        
-       ;TODO: replace it with something alike console maybe
        [p (new horizontal-panel%
                [parent main]
                [alignment '(right top)])]
