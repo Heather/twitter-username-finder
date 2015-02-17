@@ -72,7 +72,7 @@
        [smart-twitter-search
         (λ (username)
           (define timer-counter 0)
-          (define lchars #\a)
+          (define lchars (integer->char (- (char->integer #\a) 1)))
           (unless (twitter-search username)
             (letrec 
                 ((recursive-twitter-search
@@ -87,13 +87,20 @@
                       (set! trytime (+ 1 trytime))
                       (unless (or (twitter-search test)                           
                                   (cond
-                                    [(= trytime 26) (recursive-twitter-search username #\a 1) #t]
-                                    [(= trytime (* 2 26)) 
+                                    [(or (= trytime 26)
+                                         (= trytime (* 2 26))) 
+                                     (recursive-twitter-search username #\a 1) #t]
+                                    [(and (>= trytime (* 3 26))
+                                          (<= trytime (* (+ 3 26) 26))
+                                          (= (modulo trytime 26) 0))
+                                     (define username- 
+                                       (cond 
+                                         [(= trytime (* 3 26)) username]
+                                         [else (string-drop-right username 1)]))
                                      (set! lchars (integer->char (+ 1 (char->integer lchars))))
-                                     (define u (addMethod username lchars))
+                                     (define u (addMethod username- lchars))
                                      (recursive-twitter-search u #\a 1) #t]
-                                    [(= trytime (* 3 26)) (recursive-twitter-search username #\a 2) #t]
-                                    [(= trytime (* 4 26)) #t]; End
+                                    [(= trytime (* (+ 4 26) 26)) #t]; End
                                     [else #f]))
                         (define timer
                           (new timer%
