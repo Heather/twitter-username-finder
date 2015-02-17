@@ -61,6 +61,7 @@
        [replaceDepth 1]
        [replaceMethod
         (λ (username tch)
+          (define strlen (string-length username))
           (when (= trytime 26)
             (set! replaceDepth 2))
           (let* ([username- (string-drop-right username replaceDepth)])
@@ -71,6 +72,7 @@
        [smart-twitter-search
         (λ (username)
           (define timer-counter 0)
+          (define lchars #\a)
           (unless (twitter-search username)
             (letrec 
                 ((recursive-twitter-search
@@ -86,14 +88,18 @@
                       (unless (or (twitter-search test)                           
                                   (cond
                                     [(= trytime 26) (recursive-twitter-search username #\a 1) #t]
-                                    [(= trytime 26) (recursive-twitter-search username #\a 2) #t]
-                                    [(= trytime 30) #t]; End
+                                    [(= trytime (* 2 26)) 
+                                     (set! lchars (integer->char (+ 1 (char->integer lchars))))
+                                     (define u (addMethod username lchars))
+                                     (recursive-twitter-search u #\a 1) #t]
+                                    [(= trytime (* 3 26)) (recursive-twitter-search username #\a 2) #t]
+                                    [(= trytime (* 4 26)) #t]; End
                                     [else #f]))
                         (define timer
                           (new timer%
                                (notify-callback
                                 (lambda ()
-                                  (cond [(< timer-counter 5)
+                                  (cond [(< timer-counter 1)
                                          (set! timer-counter (add1 timer-counter))]
                                         [else
                                          (send timer stop)
