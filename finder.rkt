@@ -49,7 +49,6 @@
                         'normal)))
             (send t insert msg) available))]
        
-       [cycle 0]
        [trytime 0]
        
        ;Add character method (last cycle)
@@ -86,9 +85,9 @@
                       (set! trytime (+ 1 trytime))
                       (unless (or (twitter-search test)                           
                                   (cond
-                                    [(= trytime 5) (recursive-twitter-search username #\a 1) #t]
-                                    [(= trytime 10) (recursive-twitter-search username #\a 2) #t]
-                                    [(= trytime 11) (set! cycle 2) #t] ; End
+                                    [(= trytime 26) (recursive-twitter-search username #\a 1) #t]
+                                    [(= trytime 26) (recursive-twitter-search username #\a 2) #t]
+                                    [(= trytime 30) #t]; End
                                     [else #f]))
                         (define timer
                           (new timer%
