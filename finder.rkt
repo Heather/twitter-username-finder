@@ -21,7 +21,9 @@
 (define main (new (class frame% (super-new)
                     (define/augment (on-close)
                       (displayln "Bye")))
-                  [label ip] [min-width 300]))
+                  [label ip] [min-width 300]
+                  [stretchable-width #f]
+                  [stretchable-height #f]))
 
 (define c (new editor-canvas% [parent main]
                [min-width 100] [min-height 300]))
